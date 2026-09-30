@@ -1,0 +1,26 @@
+{
+  "name": "bullmqretrystromsimulator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "step1": "tsx src/experiments/step1.ts",
+    "step2": "tsx src/experiments/step2.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@types/dotenv": "^6.1.1",
+    "bullmq": "^6.3.10",
+    "dotenv": "^18.0.4",
+    "ioredis": "^6.0.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}

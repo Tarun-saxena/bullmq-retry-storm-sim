@@ -8,6 +8,7 @@
     "step1": "tsx src/experiments/step1.ts",
     "step2": "tsx src/experiments/step2.ts",
     "step3": "tsx src/experiments/step3.ts",
+    "compare": "tsx src/experiments/compare.ts",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [],

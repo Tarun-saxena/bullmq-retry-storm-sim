@@ -93,7 +93,7 @@ export async function runScenario(cfg: scenarioConfig) {
         }))
     );
 
-    const deadline = Date.now() + 45000;
+    const deadline = Date.now() + 90000;
     while (finished < cfg.jobs && Date.now() < deadline) {
         await new Promise((r) => setTimeout(r, 100));
     };

@@ -4,7 +4,12 @@ import { summarize, Recorder } from "../src/recorder.js";
 import { Redis } from "ioredis";
 import "dotenv/config";
 
-export type backOffKind = "exponential" | "fixed" | "exponentialJitter";
+export type backOffKind =
+    "none"
+    | "fixed"
+    | "exponential"
+    | "exponentialJitter"
+    | "exponentialEqualJitter";
 
 export type scenarioConfig = {
     name: string;
@@ -14,14 +19,19 @@ export type scenarioConfig = {
     attempts: number;
     backoff: backOffKind;
     baseDelayMs: number;
+    capacityPerSec: number;
 
 }
 
 function delayFor(kind: backOffKind, base: number, attemptsMade: number) {
+    if (kind === "none") return 0;
     if (kind === "fixed") return base;
-    const exp = base * 2 ** (attemptsMade - 1); // 1s, 2s, 4s
-    return kind === "exponential" ? exp : Math.random() * exp; // jitter
+    const exp = base * 2 ** (attemptsMade - 1);
+    if (kind === "exponential") return exp;
+    if (kind === "exponentialJitter") return Math.random() * exp;
+    return exp / 2 + Math.random() * (exp / 2); // equal jitter
 }
+
 
 
 export async function runScenario(cfg: scenarioConfig) {
@@ -65,12 +75,15 @@ export async function runScenario(cfg: scenarioConfig) {
         rec.recordDepthSample((c.waiting ?? 0) + (c.active ?? 0) + (c.delayed ?? 0));
     }, 100);
 
-    //api down
-    api.mode = { type: "down" };
     setTimeout(() => {
-        api.mode = { type: "healthy" };
+        api.mode = { type: "overload", capacityPerSec: cfg.capacityPerSec };
         rec.recoveredAt = rec.now();
     }, cfg.outageMs);
+
+    //api down
+    api.mode = { type: "down" };
+
+
 
     await queue.addBulk(
         Array.from({ length: cfg.jobs }, (_, i) => ({
@@ -80,7 +93,7 @@ export async function runScenario(cfg: scenarioConfig) {
         }))
     );
 
-    const deadline = Date.now() + 30000;
+    const deadline = Date.now() + 45000;
     while (finished < cfg.jobs && Date.now() < deadline) {
         await new Promise((r) => setTimeout(r, 100));
     };
